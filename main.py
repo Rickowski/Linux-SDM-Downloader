@@ -32,6 +32,8 @@ def main() :
         return 1
     d = Downloader()
     d.setSdx(argv[1])
+    if len(argv) == 3:
+        d.setPos(argv[2])
     d.execute()
 
 def message(text, type):
@@ -61,10 +63,14 @@ class Downloader:
         self._lastFileId = 0
         self._filesMapper = []
         self._glueNeeded = True
+        self._scriptPosition = 0
 
 
     def setSdx(self, file):
         self._sdxFile = str(file)
+
+    def setPos(self, pos):
+        self._scriptPosition = int(pos)
 
     def execute(self):
         if self._downloadMainPage() == False:
@@ -114,13 +120,17 @@ class Downloader:
             self._selected = 1
             return
 
-        for group in self._parsers:
-            group.printGroupList()
-
-        position = input("Please select file via number 1 - %i: " % (self._lastFileId))
-        position = int(position)
+        if self._scriptPosition == 0:
+            for group in self._parsers:
+                group.printGroupList()
+            position = input("Please select file via number 1 - %i: " % (self._lastFileId))
+            position = int(position)
+        else:
+            print("Chosen via command line: %i" % (self._scriptPosition))
+            position = self._scriptPosition
 
         if position < 1 or position > self._lastFileId:
+            self._scriptPosition = 0
             message("Bad choose!", WARNING)
             self._getList()
             return
